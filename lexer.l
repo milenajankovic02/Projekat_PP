@@ -1,9 +1,14 @@
 %{
 #include "parser.tab.h"
 #include <string.h>
+#include "errors.h"
+
+extern int yylineno;
+
 %}
 
 %option noyywrap
+%option yylineno
 
 /* Makroi */
 STRING     \"([^\\\"]|\\.)*\"
@@ -56,6 +61,10 @@ WORD       [a-zA-Z_][a-zA-Z0-9_]*
 
 [ \t\r\n]+             { }
 
-.                      { printf("Nepoznat karakter: %s\n", yytext); return '?'; }
+
+.                     {
+    report_lexical_error(yytext, yylineno, 0); // ne znamo kolonu, pa stavimo 0
+    return -1;
+}
 
 %%
