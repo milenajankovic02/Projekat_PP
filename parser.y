@@ -20,7 +20,7 @@ void yyerror(const char* s) {
 
 %union {
     char* str;
-    ASTNode* ast;
+    ASTNode* node;
 }
 
 %token <str> IDENTIFIER
@@ -35,7 +35,7 @@ void yyerror(const char* s) {
 %token T_EMPTY T_NOT_EMPTY T_URL_EXISTS
 %token T_COLON
 
-%type <ast> program declarations declaration commands command assign_command condition list_of_queries query_list query terms term directive
+%type <node> program declarations declaration commands command assign_command condition list_of_queries query_list query terms term directive
 
 %%
 
@@ -58,6 +58,7 @@ declarations:
         $$ = create_ast_node(AST_DECLARATION, NULL, $1, $2, NULL);
     }
     ;
+
 
 declaration:
     T_QUERY IDENTIFIER '=' query ';' {

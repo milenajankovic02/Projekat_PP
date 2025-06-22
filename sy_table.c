@@ -1,3 +1,4 @@
+// === symbol_table.c ===
 #include "sy_table.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,12 +6,12 @@
 
 static Symbol* head = NULL;
 
-void insert_symbol(const char* name, SymbolType type) {
+void insert_symbol(const char* name) {
     if (symbol_exists(name)) return; // već postoji
 
     Symbol* s = malloc(sizeof(Symbol));
     s->name = strdup(name);
-    s->type = type;
+//    s->type = type;
     s->next = head;
     head = s;
 }
@@ -29,8 +30,18 @@ void print_symbol_table() {
     Symbol* current = head;
     printf("Tabela simbola:\n");
     while (current) {
-        printf(" - %s (%s)\n", current->name,
-               current->type == SYMBOL_QUERY ? "QUERY" : "RESULT_OF_QUERY");
+        printf(" - %s (%s)\n", current->name); //,
+               //current->type == SYMBOL_QUERY ? "QUERY" : "RESULT_OF_QUERY");
         current = current->next;
+    }
+}
+
+
+void free_symbol_table() {
+    while (head) {
+        Symbol* tmp = head;
+        head = head->next;
+        free(tmp->name);
+        free(tmp);
     }
 }
