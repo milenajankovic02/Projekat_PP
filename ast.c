@@ -1,4 +1,3 @@
-// === ast.c ===
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +28,15 @@ const char* ast_node_type_to_string(NodeType type) {
         case AST_LIST_OF_QUERIES: return "ListOfQueries";
         case AST_QUERY_LIST: return "QueryList";
         case AST_IDENTIFIER: return "Identifier";
+        case AST_STRING_LITERAL: return "String Literal";
+        case AST_END: return "End";
+        case AST_IN: return "In";
+        case AST_BEGIN: return "Begin";
+        case AST_SEQUENCE: return "Sequence";
+        case AST_COND_EMPTY: return "Condition Empty";
+        case AST_COND_URL_EXISTS: return "Condition URL exists";
+        case AST_COND_NOT_EMPTY: return "Condition not empty";
+
         case AST_STRING: return "String";
         case AST_SET_OP: return "SetOperator";
         default: return "Unknown";
@@ -36,102 +44,23 @@ const char* ast_node_type_to_string(NodeType type) {
 }
 
 
-/*
-Primjer ulaza 
-QUERY basic = <apple banana>;
--Iz gramatike 
-declaration -> "QUERY" query_name "=" query ";"
-query -> "<" terms ">"
-terms -> terms term
-term -> TERM
-
-Parser ovo cita tako sto kada vidi "QUERY" ulazi u declaration 
-basic -> postaje query_name 
-<apple banana> -> ulazi u query
-apple i banana su TERM-ovi
-
-
-Znaci koristi ovaj dio strukture cvora
-struct {
-    char* name; -> to je query_name 
-    struct Node* value; -> ovo je query koji je takodje lijeva strana nekog pravila
-} declaration;
-Ovom struct Node* value dodjeljuje se query tip cvora, tj., AST_QUERY_DECLARATION
-i onda gleda njegovu vrijednost i radi isto sto je i iznad, obradjuje desnu stranu pravila
-
-Drugi primjer sa for zbog boljeg razumijevanja 
-FOR item IN [basic, advanced] BEGIN
-    temp = EXEC item;
-    res = res ++ item;
-END
-
-Prepoznaje token FOR pa koristi pravilo ispod:
-command → "FOR" identifier "IN" list_of_queries "BEGIN" commands "END"
-list_of_queries → "[" query_list "]"
-query_list → query | query_list "," query
-assign_command → identifier "=" "EXEC" query_name ";"
-
-Kako je ovo 
-FOR iterator in LISTA BEGIN ...body... END
-na ovaj tip cvora se odnosi dio:
-struct {
-    char* iterator; 
-    struct Node* query_list;
-    struct Node* body;
-} for_loop;
-char* iterator se koristi za item u for-u, to je niz karaktera 
-takodje bi mogli da koristimo 
-Node* iterator;
-ovaj cvor bi bio tipa AST_IDENTIFIER
-i on bi imao sam ime sto je fleksibilnije, ali ovo je jednostavnije trenutno
-*/
-
-Node* create_directive(char* key, char* value) 
+//PROGRAM
+Node* create_program(Node* declarations, Node* commands)
 {
     Node* node = malloc(sizeof(Node));
-    node->type = AST_DIRECTIVE;
-    node->directive.key = strdup(key);
-    node->directive.value = strdup(value);
-    return node;
+    node->type = AST_PROGRAM;
+    node->program.commands = commands;
+    node->program.declarations = declarations;
 }
-
-Node* create_identifier(char* name) 
+Node* create_program_d(Node* declarations)
 {
     Node* node = malloc(sizeof(Node));
-    node->type = AST_IDENTIFIER;
-    node->string_value = strdup(name);
-    return node;
+    node->type = AST_PROGRAM;
+    node->program.commands = NULL; //nema komandi
+    node->program.declarations = declarations;
 }
 
-Node* create_binary_op(Node* first_op, Node* second_op)
-{
-    Node* node = malloc(sizeof(Node));
-    node->type = AST_OR; //VALJDA????
-    node->binaryOp.left = first_op;
-    node->binaryOp.right = second_op;
-    return node;
-}
-
-
-Node* create_unary_op(char op, Node* operand) 
-{
-    Node* node = malloc(sizeof(Node));
-    node->type = AST_OPERATOR_TERM;
-    node->unaryOp.op = op;
-    node->unaryOp.operand = operand;
-    return node;
-}
-
-Node* create_juxtaposition(Node* first, Node* second)
-{
-    Node* node = malloc(sizeof(Node));
-    node->type = AST_JUXTAPOSITION;
-    node->juxtaposition.first = first;
-    node->juxtaposition.second = second;
-    return node;
-}
-
-
+//DECLARATION
 Node* create_declaration(char* name, Node* value)
 {
     Node* node = malloc(sizeof(Node));
@@ -141,7 +70,30 @@ Node* create_declaration(char* name, Node* value)
     return node;
 }
 
+Node* create_declaration_roq(char* name)
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_DECLARATION;
+    node->declaration.name = strdup(name);
+    node->declaration.value = NULL;
+    return node;
+}
 
+//COMMANDS
+Node* create_identifier(char* name) 
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_IDENTIFIER;
+    node->string_value = strdup(name);
+    return node;
+}
+Node* create_string_literal(char* name) 
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_STRING_LITERAL;
+    node->string_value = strdup(name);
+    return node;
+}
 Node* create_for(char* iterator, Node* list, Node* body) 
 {
     Node* node = malloc(sizeof(Node));
@@ -161,52 +113,175 @@ Node* create_if(Node* condition, Node* body)
     return node;
 }
 
-Node* create_set_op(char* left, char* op, char* right)
-{
-    Node* node = malloc(sizeof(Node));
-    node->type = AST_SET_OP;
-    node->set_operation.left = strdup(left);
-    node->set_operation.op = op;
-    node->set_operation.right = right;
-    return node;
-}
-
-
+//assign command
 //PR., temp = EXEC item;
 //left = "temp"
 //exec_target = "item"
-
-Node* create_exec(char* left, char* exec_target) 
+Node* create_assign_command_exec(char* res, char* name)
 {
     Node* node = malloc(sizeof(Node));
     node->type = AST_ASSIGN;
-    node->assign_exec.left = strdup(left);
-    node->assign_exec.exec_target = strdup(exec_target);
+    node->assign_exec.res = res;
+    node->assign_exec.exec_target = name;
     return node;
 }
 
-Node* create_query(Node* terms)
+//cuvamo rezultat u res
+Node* create_assign_command_op(char* res, char* operator1, char* operator2)
 {
     Node* node = malloc(sizeof(Node));
-    node->type = AST_QUERY;
-    node->query.terms = terms;
+    node->type = AST_ASSIGN;
+    node->assign_op.res = res;
+    node->assign_op.operator1 = operator1;
+    node->assign_op.operator2 = operator2;
+    return node;
 }
 
-Node* create_query_list(Node** queries, int count)
+//CONDITION
+
+Node* create_condition_empty(char* identifier) 
 {
     Node* node = malloc(sizeof(Node));
-    node->type = AST_QUERY_LIST;
-    node->query_list.queries = queries; //VALJDA??
-    node->query_list.count = count;
+    node->type = AST_COND_EMPTY;
+    node->string_value = strdup(identifier);
+    return node;
 }
 
-Node* create_program(Node* declarations, Node* commands)
+Node* create_condition_not_empty(char* identifier) 
 {
     Node* node = malloc(sizeof(Node));
-    node->type = AST_PROGRAM;
-    node->program.commands = commands;
-    node->program.declarations = declarations;
+    node->type = AST_COND_NOT_EMPTY;
+    node->string_value = strdup(identifier);
+    return node;
 }
+
+Node* create_condition_url_exists(char* identifier, char* url_string) 
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_COND_URL_EXISTS;
+    node->binaryOp.left = create_string_node(identifier);
+    node->binaryOp.right = create_string_node(url_string);
+    return node;
+}
+
+//TERMS
+//ova fja radi kao create_sequence
+Node* create_or(Node* left, Node* right)
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_OR;
+    node->binaryOp.left = left;
+    node->binaryOp.right = right;
+    return node;
+}
+
+//ova fja radi kao create_sequence
+Node* create_juxtaposition(Node* first, Node* second)
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_JUXTAPOSITION;
+    node->juxtaposition.first = first;
+    node->juxtaposition.second = second;
+    return node;
+}
+
+
+//TERM
+Node* create_unary_op(char op, Node* operand)
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_OPERATOR_TERM;
+    node->unaryOp.op = op;
+    node->unaryOp.operand = operand;
+    return node;
+}
+
+//DIRECTIVE
+Node* create_directive(char* key, char* value) 
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_DIRECTIVE;
+    node->directive.key = strdup(key);
+    node->directive.value = strdup(value);
+    return node;
+}
+
+
+//T_END ima samo tip
+Node* create_end() 
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_END;
+    return node;
+}
+
+//T_IN
+Node* create_in()
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_IN;
+    return node;
+}
+
+//T_BEGIN
+Node* create_begin()
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_BEGIN;
+    return node;
+}
+
+//T_EXEC
+Node* create_exec(char* name)
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_EXEC;
+    node->string_value = name;
+    return node;
+}
+
+
+Node* create_sequence(Node *first, Node *second) //pravljenje sekvenci čvorova
+{
+    Node* node = malloc(sizeof(Node));
+    node->type = AST_SEQUENCE;
+    node->sequence.node1 = first;
+    node->sequence.node2 = second;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //prva verzija
 /*

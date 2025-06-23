@@ -68,7 +68,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 5 "parser.y"
+#line 4 "parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,15 +78,16 @@
 
 extern int yylineno;
 int yylex(void);
-ASTNode* root = NULL;
+Node* root = NULL;
 
 void yyerror(const char* s) {
     report_syntax_error(s, yylineno, 0);
 }
+int sytax_error = 0;
 
 
 /* Line 189 of yacc.c  */
-#line 90 "parser.tab.c"
+#line 91 "parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -109,14 +110,14 @@ void yyerror(const char* s) {
 /* "%code requires" blocks.  */
 
 /* Line 209 of yacc.c  */
-#line 2 "parser.y"
+#line 1 "parser.y"
 
     #include "ast.h"
 
 
 
 /* Line 209 of yacc.c  */
-#line 120 "parser.tab.c"
+#line 121 "parser.tab.c"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -155,12 +156,12 @@ typedef union YYSTYPE
 #line 21 "parser.y"
 
     char* str;
-    ASTNode* ast;
+    Node* node;
 
 
 
 /* Line 214 of yacc.c  */
-#line 164 "parser.tab.c"
+#line 165 "parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -172,7 +173,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 176 "parser.tab.c"
+#line 177 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -470,10 +471,10 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    43,    43,    47,    54,    57,    63,    66,    69,    75,
-      78,    84,    87,    90,    94,   100,   105,   115,   118,   122,
-     128,   134,   137,   143,   149,   152,   155,   161,   164,   167,
-     170,   176
+       0,    43,    43,    53,    66,    69,    76,    79,    82,    88,
+      92,    99,   102,   105,   108,   115,   118,   125,   128,   131,
+     137,   143,   146,   152,   158,   161,   164,   170,   173,   176,
+     179,   185
 };
 #endif
 
@@ -1429,287 +1430,291 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 43 "parser.y"
     {
-        root = create_ast_node(AST_PROGRAM, NULL, (yyvsp[(1) - (2)].ast), (yyvsp[(2) - (2)].ast), NULL);
-        (yyval.ast) = root;
+      if(sytax_error == 0)
+      {
+        (yyval.node) = create_program((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node));
+      }
+      else
+      {
+        (yyval.node) = NULL;
+      }
     ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 47 "parser.y"
+#line 53 "parser.y"
     {
-        root = create_ast_node(AST_PROGRAM, NULL, (yyvsp[(1) - (1)].ast), NULL, NULL);
-        (yyval.ast) = root;
+      if(sytax_error == 0)
+      {
+        (yyval.node) = create_program_d((yyvsp[(1) - (1)].node));
+      }
+      else
+      {
+        (yyval.node) = NULL;
+      }
     ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 54 "parser.y"
+#line 66 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(1) - (1)].ast);
+        (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 57 "parser.y"
+#line 69 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_DECLARATION, NULL, (yyvsp[(1) - (2)].ast), (yyvsp[(2) - (2)].ast), NULL);
+        (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node));
     ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 63 "parser.y"
+#line 76 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_QUERY_DECLARATION, (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].ast), NULL, NULL);
+      (yyval.node) = create_declaration(create_identifier((yyvsp[(2) - (5)].str)), (yyvsp[(4) - (5)].node));
     ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 66 "parser.y"
+#line 79 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_QUERY_DECLARATION, (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].ast), NULL, NULL);
+      (yyval.node) = create_declaration(create_identifier((yyvsp[(2) - (5)].str)), (yyvsp[(4) - (5)].node));
     ;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 69 "parser.y"
+#line 82 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_RESULT_OF_QUERY, (yyvsp[(2) - (3)].str), NULL, NULL, NULL);
+      (yyval.node) = create_declaration_roq(create_identifier((yyvsp[(2) - (3)].str)));
     ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 75 "parser.y"
+#line 88 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(1) - (1)].ast);
+        //kreiramo sekvencu komandi ako imamo samo jednu komandu
+        (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 78 "parser.y"
+#line 92 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_COMMANDS, NULL, (yyvsp[(1) - (2)].ast), (yyvsp[(2) - (2)].ast), NULL);
+        //dodajemo novu komandu u sekvencu
+        (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node)); 
     ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 84 "parser.y"
+#line 99 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_EXEC, (yyvsp[(2) - (3)].str), NULL, NULL, NULL);
+        (yyval.node) = create_exec(create_identifier((yyvsp[(2) - (3)].str)));
     ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 87 "parser.y"
+#line 102 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_IF, NULL, (yyvsp[(2) - (5)].ast), (yyvsp[(4) - (5)].ast), NULL);
+        (yyval.node) = create_if((yyvsp[(2) - (5)].node), create_begin(), (yyvsp[(4) - (5)].node), create_end());
     ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 90 "parser.y"
+#line 105 "parser.y"
     {
-        ASTNode* id = create_ast_node(AST_IDENTIFIER, (yyvsp[(2) - (7)].str), NULL, NULL, NULL);
-        (yyval.ast) = create_ast_node(AST_FOR, NULL, id, (yyvsp[(4) - (7)].ast), (yyvsp[(6) - (7)].ast));
+        (yyval.node) = create_for(create_identifier((yyvsp[(2) - (7)].str)), create_in(), (yyvsp[(4) - (7)].node), (yyvsp[(6) - (7)].node), create_end());
     ;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 94 "parser.y"
+#line 108 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(1) - (2)].ast);
+        (yyval.node) = (yyvsp[(1) - (2)].node);
     ;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 100 "parser.y"
+#line 115 "parser.y"
     {
-        ASTNode* target = create_ast_node(AST_IDENTIFIER, (yyvsp[(1) - (4)].str), NULL, NULL, NULL);
-        ASTNode* exec = create_ast_node(AST_EXEC, (yyvsp[(4) - (4)].str), NULL, NULL, NULL);
-        (yyval.ast) = create_ast_node(AST_ASSIGN, NULL, target, exec, NULL);
+        (yyval.node) = create_assign_command_exec(create_identifier((yyvsp[(1) - (4)].str)), (yyvsp[(4) - (4)].str));
     ;}
     break;
 
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 105 "parser.y"
+#line 118 "parser.y"
     {
-        ASTNode* left = create_ast_node(AST_IDENTIFIER, (yyvsp[(3) - (5)].str), NULL, NULL, NULL);
-        ASTNode* right = create_ast_node(AST_IDENTIFIER, (yyvsp[(5) - (5)].str), NULL, NULL, NULL);
-        ASTNode* op = create_ast_node(AST_SET_OP, (yyvsp[(4) - (5)].str), left, right, NULL);
-        ASTNode* target = create_ast_node(AST_IDENTIFIER, (yyvsp[(1) - (5)].str), NULL, NULL, NULL);
-        (yyval.ast) = create_ast_node(AST_ASSIGN, NULL, target, op, NULL);
+        (yyval.node) = create_assign_command_op(create_identifier((yyvsp[(1) - (5)].str)), create_identifier((yyvsp[(3) - (5)].str)), create_identifier((yyvsp[(5) - (5)].str)));
     ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 115 "parser.y"
+#line 125 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_TERM, (yyvsp[(3) - (4)].str), NULL, NULL, NULL);
+      (yyval.node) = create_condition_empty(create_identifier((yyvsp[(3) - (4)].str)));
     ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 118 "parser.y"
+#line 128 "parser.y"
     {
-        ASTNode* url = create_ast_node(AST_STRING, (yyvsp[(5) - (6)].str), NULL, NULL, NULL);
-        (yyval.ast) = create_ast_node(AST_TERM, (yyvsp[(3) - (6)].str), url, NULL, NULL);
+      (yyval.node) = create_condition_url_exists(create_identifier((yyvsp[(3) - (6)].str)), create_string_literal((yyvsp[(5) - (6)].str)));
     ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 122 "parser.y"
+#line 131 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_TERM, (yyvsp[(3) - (4)].str), NULL, NULL, NULL);
+      (yyval.node) = create_condition_not_empty(create_identifier((yyvsp[(3) - (4)].str)));
     ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 128 "parser.y"
+#line 137 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(2) - (3)].ast);
+        (yyval.node) = (yyvsp[(2) - (3)].node);
     ;}
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 134 "parser.y"
+#line 143 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(1) - (1)].ast);
+        (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 137 "parser.y"
+#line 146 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_QUERY_LIST, NULL, (yyvsp[(1) - (3)].ast), (yyvsp[(3) - (3)].ast), NULL);
+        (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));
     ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 143 "parser.y"
+#line 152 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_QUERY, NULL, (yyvsp[(2) - (3)].ast), NULL, NULL);
+        (yyval.node) = (yyvsp[(2) - (3)].node)
     ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 149 "parser.y"
+#line 158 "parser.y"
     {
-    (yyval.ast) = (yyvsp[(1) - (1)].ast);
+    (yyval.node) = (yyvsp[(1) - (1)].node);
   ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 152 "parser.y"
+#line 161 "parser.y"
     {
-    (yyval.ast) = create_ast_node(AST_JUXTAPOSITION, NULL, (yyvsp[(1) - (2)].ast), (yyvsp[(2) - (2)].ast), NULL);
+    (yyval.node) = create_juxtaposition((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node)); 
   ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 155 "parser.y"
+#line 164 "parser.y"
     {
-    (yyval.ast) = create_ast_node(AST_OR, NULL, (yyvsp[(1) - (3)].ast), (yyvsp[(3) - (3)].ast), NULL);
+    (yyval.node) = create_or((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));
   ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 161 "parser.y"
+#line 170 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_TERM, (yyvsp[(1) - (1)].str), NULL, NULL, NULL);
+        (yyval.node) = create_identifier((yyvsp[(1) - (1)].str));
     ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 164 "parser.y"
+#line 173 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(1) - (1)].ast);
+        (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 167 "parser.y"
+#line 176 "parser.y"
     {
-        (yyval.ast) = create_ast_node(AST_OPERATOR_TERM, (yyvsp[(1) - (2)].str), (yyvsp[(2) - (2)].ast), NULL, NULL);
+        (yyval.node) = create_unary_op((yyvsp[(1) - (2)].str), (yyvsp[(2) - (2)].node))
     ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 170 "parser.y"
+#line 179 "parser.y"
     {
-        (yyval.ast) = (yyvsp[(2) - (3)].ast);
+     (yyval.node) = (yyvsp[(2) - (3)].node); 
     ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 176 "parser.y"
+#line 185 "parser.y"
     {
-        ASTNode* key = create_ast_node(AST_IDENTIFIER, (yyvsp[(1) - (3)].str), NULL, NULL, NULL);
-        ASTNode* value = create_ast_node(AST_STRING, (yyvsp[(3) - (3)].str), NULL, NULL, NULL);
-        (yyval.ast) = create_ast_node(AST_DIRECTIVE, NULL, key, value, NULL);
+        create_directive((yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str))
     ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1713 "parser.tab.c"
+#line 1718 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1921,6 +1926,6 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 183 "parser.y"
+#line 190 "parser.y"
 
 

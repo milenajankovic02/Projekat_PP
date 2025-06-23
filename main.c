@@ -6,7 +6,7 @@
 
 extern FILE* yyin;
 extern int yyparse();
-extern ASTNode* root; // Definisano u parser.y
+extern Node* root; // Definisano u parser.y
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {

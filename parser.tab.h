@@ -35,7 +35,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 1676 of yacc.c  */
-#line 2 "parser.y"
+#line 1 "parser.y"
 
     #include "ast.h"
 
@@ -81,7 +81,7 @@ typedef union YYSTYPE
 #line 21 "parser.y"
 
     char* str;
-    ASTNode* ast;
+    Node* node;
 
 
 

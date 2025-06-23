@@ -1,4 +1,3 @@
-/* parser.y */
 %code requires {
     #include "ast.h"
 }
@@ -11,16 +10,18 @@
 
 extern int yylineno;
 int yylex(void);
-ASTNode* root = NULL;
+Node* root = NULL;
 
+int sytax_error = 0;
 void yyerror(const char* s) {
+    sytax_error = 1;
     report_syntax_error(s, yylineno, 0);
 }
 %}
 
 %union {
     char* str;
-    ASTNode* node;
+    Node* node;
 }
 
 %token <str> IDENTIFIER
@@ -41,12 +42,26 @@ void yyerror(const char* s) {
 
 program:
   declarations commands {
-        root = create_ast_node(AST_PROGRAM, NULL, $1, $2, NULL);
+      if(sytax_error == 0)
+      {
+        root = create_program($1, $2);
         $$ = root;
+      }
+      else
+      {
+        $$ = NULL;
+      }
     }
   | declarations {
-        root = create_ast_node(AST_PROGRAM, NULL, $1, NULL, NULL);
+      if(sytax_error == 0)
+      {
+        root = create_program_d($1);
         $$ = root;
+      }
+      else
+      {
+        $$ = NULL;
+      }
     }
     ;
 
@@ -55,73 +70,69 @@ declarations:
         $$ = $1;
     }
   | declarations declaration {
-        $$ = create_ast_node(AST_DECLARATION, NULL, $1, $2, NULL);
+        $$ = create_sequence($1, $2);
     }
     ;
 
 
 declaration:
     T_QUERY IDENTIFIER '=' query ';' {
-        $$ = create_ast_node(AST_QUERY_DECLARATION, $2, $4, NULL, NULL);
+      $$ = create_declaration(create_identifier($2), $4);
     }
   | T_QUERY IDENTIFIER '=' list_of_queries ';' {
-        $$ = create_ast_node(AST_QUERY_DECLARATION, $2, $4, NULL, NULL);
+      $$ = create_declaration(create_identifier($2), $4);
     }
   | T_RESULT_OF_QUERY IDENTIFIER ';' {
-        $$ = create_ast_node(AST_RESULT_OF_QUERY, $2, NULL, NULL, NULL);
+      $$ = create_declaration_roq(create_identifier($2));
     }
     ;
 
 commands:
     command {
+        //kreiramo sekvencu komandi ako imamo samo jednu komandu
         $$ = $1;
     }
   | commands command {
-        $$ = create_ast_node(AST_COMMANDS, NULL, $1, $2, NULL);
+        //dodajemo novu komandu u sekvencu
+        $$ = create_sequence($1, $2); 
     }
     ;
 
 command:
     T_EXEC IDENTIFIER ';' {
-        $$ = create_ast_node(AST_EXEC, $2, NULL, NULL, NULL);
+        $$ = create_exec(create_identifier($2));
     }
   | T_IF condition T_BEGIN commands T_END {
-        $$ = create_ast_node(AST_IF, NULL, $2, $4, NULL);
+        $$ = create_if($2, create_begin(), $4, create_end());
     }
   | T_FOR IDENTIFIER T_IN list_of_queries T_BEGIN commands T_END {
-        ASTNode* id = create_ast_node(AST_IDENTIFIER, $2, NULL, NULL, NULL);
-        $$ = create_ast_node(AST_FOR, NULL, id, $4, $6);
+        $$ = create_for(create_identifier($2), create_in(), $4, $6, create_end());
     }
   | assign_command ';' {
         $$ = $1;
     }
     ;
 
+//kada promjenljivoj dodjeljujemo rezultat
 assign_command:
     IDENTIFIER '=' T_EXEC IDENTIFIER {
-        ASTNode* target = create_ast_node(AST_IDENTIFIER, $1, NULL, NULL, NULL);
-        ASTNode* exec = create_ast_node(AST_EXEC, $4, NULL, NULL, NULL);
-        $$ = create_ast_node(AST_ASSIGN, NULL, target, exec, NULL);
+        $$ = create_assign_command_exec(create_identifier($1), $4);
     }
   | IDENTIFIER '=' IDENTIFIER SET_OPERATOR IDENTIFIER {
-        ASTNode* left = create_ast_node(AST_IDENTIFIER, $3, NULL, NULL, NULL);
-        ASTNode* right = create_ast_node(AST_IDENTIFIER, $5, NULL, NULL, NULL);
-        ASTNode* op = create_ast_node(AST_SET_OP, $4, left, right, NULL);
-        ASTNode* target = create_ast_node(AST_IDENTIFIER, $1, NULL, NULL, NULL);
-        $$ = create_ast_node(AST_ASSIGN, NULL, target, op, NULL);
+        $$ = create_assign_command_op(create_identifier($1), create_identifier($3), create_identifier($5));
     }
     ;
 
+
 condition:
     T_EMPTY '(' IDENTIFIER ')' {
-        $$ = create_ast_node(AST_TERM, $3, NULL, NULL, NULL);
+      $$ = create_condition_empty(create_identifier($3));
     }
   | T_URL_EXISTS '(' IDENTIFIER ',' STRING_LITERAL ')' {
-        ASTNode* url = create_ast_node(AST_STRING, $5, NULL, NULL, NULL);
-        $$ = create_ast_node(AST_TERM, $3, url, NULL, NULL);
+      $$ = create_condition_url_exists(create_identifier($3), create_string_literal($5));
     }
   | T_NOT_EMPTY '(' IDENTIFIER ')' {
-        $$ = create_ast_node(AST_TERM, $3, NULL, NULL, NULL);
+      $$ = create_condition_not_empty(create_identifier($3));
     }
     ;
 
@@ -136,13 +147,13 @@ query_list:
         $$ = $1;
     }
   | query_list ',' query {
-        $$ = create_ast_node(AST_QUERY_LIST, NULL, $1, $3, NULL);
+        $$ = create_sequence($1, $3);
     }
     ;
 
 query:
     '<' terms '>' {
-        $$ = create_ast_node(AST_QUERY, NULL, $2, NULL, NULL);
+        $$ = $2
     }
     ;
 
@@ -151,33 +162,31 @@ terms:
     $$ = $1;
   }
   | terms term {
-    $$ = create_ast_node(AST_JUXTAPOSITION, NULL, $1, $2, NULL);
+    $$ = create_juxtaposition($1, $2); 
   }
   | terms '|' terms {
-    $$ = create_ast_node(AST_OR, NULL, $1, $3, NULL);
+    $$ = create_or($1, $3);
   }
   ;
 
 term:
-  IDENTIFIER {
-        $$ = create_ast_node(AST_TERM, $1, NULL, NULL, NULL);
+    IDENTIFIER {
+        $$ = create_identifier($1);
     }
   | directive {
         $$ = $1;
     }
   | OPERATOR term {
-        $$ = create_ast_node(AST_OPERATOR_TERM, $1, $2, NULL, NULL);
+        $$ = create_unary_op($1, $2)
     }
   | '(' terms ')' {
-        $$ = $2;
+     $$ = $2; 
     }
-    ;
+  ; 
 
 directive:
     KEY T_COLON VALUE {
-        ASTNode* key = create_ast_node(AST_IDENTIFIER, $1, NULL, NULL, NULL);
-        ASTNode* value = create_ast_node(AST_STRING, $3, NULL, NULL, NULL);
-        $$ = create_ast_node(AST_DIRECTIVE, NULL, key, value, NULL);
+        create_directive($1, $3)
     }
     ;
 
