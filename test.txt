@@ -1,1 +1,6 @@
-QUERY moj_upit = <jabuka | banana narandza>;
+QUERY q1 = < apple banana >;
+RESULT_OF_QUERY temp;
+
+IF EMPTY(temp) BEGIN
+temp = EXEC q1;
+END

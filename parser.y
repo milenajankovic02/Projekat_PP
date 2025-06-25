@@ -12,18 +12,22 @@ extern int yylineno;
 int yylex(void);
 Node* root = NULL;
 
-int sytax_error = 0;
+int syntax_error = 0;
 void yyerror(const char* s) {
-    sytax_error = 1;
+    syntax_error = 1;
     report_syntax_error(s, yylineno, 0);
 }
 %}
+
+
 
 %union {
     char* str;
     Node* node;
 }
 
+
+%token T_COLON ":"
 %token <str> IDENTIFIER
 %token <str> STRING_LITERAL
 %token <str> SET_OPERATOR
@@ -34,7 +38,6 @@ void yyerror(const char* s) {
 %token T_QUERY T_EXEC T_RESULT_OF_QUERY
 %token T_IF T_FOR T_IN T_BEGIN T_END
 %token T_EMPTY T_NOT_EMPTY T_URL_EXISTS
-%token T_COLON
 
 %type <node> program declarations declaration commands command assign_command condition list_of_queries query_list query terms term directive
 
@@ -42,7 +45,7 @@ void yyerror(const char* s) {
 
 program:
   declarations commands {
-      if(sytax_error == 0)
+      if(syntax_error== 0)
       {
         root = create_program($1, $2);
         $$ = root;
@@ -53,7 +56,7 @@ program:
       }
     }
   | declarations {
-      if(sytax_error == 0)
+      if(syntax_error== 0)
       {
         root = create_program_d($1);
         $$ = root;
@@ -106,7 +109,7 @@ command:
         $$ = create_if($2, create_begin(), $4, create_end());
     }
   | T_FOR IDENTIFIER T_IN list_of_queries T_BEGIN commands T_END {
-        $$ = create_for(create_identifier($2), create_in(), $4, $6, create_end());
+        $$ = create_for(create_identifier($2), create_in(), $4, create_begin(), $6, create_end());
     }
   | assign_command ';' {
         $$ = $1;
@@ -116,10 +119,10 @@ command:
 //kada promjenljivoj dodjeljujemo rezultat
 assign_command:
     IDENTIFIER '=' T_EXEC IDENTIFIER {
-        $$ = create_assign_command_exec(create_identifier($1), $4);
+        $$ = create_assign_command_exec(create_identifier($1), create_identifier($4));
     }
   | IDENTIFIER '=' IDENTIFIER SET_OPERATOR IDENTIFIER {
-        $$ = create_assign_command_op(create_identifier($1), create_identifier($3), create_identifier($5));
+        $$ = create_assign_command_op(create_identifier($1), create_identifier($3), create_set_operator($4) ,create_identifier($5));
     }
     ;
 
@@ -153,7 +156,11 @@ query_list:
 
 query:
     '<' terms '>' {
-        $$ = $2
+        $$ = $2;
+    }
+    |
+    IDENTIFIER {
+        $$ = create_identifier($1);
     }
     ;
 
@@ -177,17 +184,16 @@ term:
         $$ = $1;
     }
   | OPERATOR term {
-        $$ = create_unary_op($1, $2)
+        $$ = create_unary_op($1[0], $2);
     }
   | '(' terms ')' {
-     $$ = $2; 
+        $$ = $2; 
     }
-  ; 
+  ;
 
 directive:
-    KEY T_COLON VALUE {
-        create_directive($1, $3)
+    IDENTIFIER T_COLON IDENTIFIER {
+        $$ = create_directive($1, $3);
     }
     ;
-
 %%

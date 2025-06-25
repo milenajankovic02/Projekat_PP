@@ -1,9 +1,20 @@
 %{
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include "parser.tab.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "errors.h"
-
+#include <unistd.h>
+#include "ast.h"
 extern int yylineno;
+
+
+
+
 
 %}
 
@@ -28,13 +39,13 @@ WORD       [a-zA-Z_][a-zA-Z0-9_]*
 "NOT_EMPTY"            { return T_NOT_EMPTY; }
 "URL_EXISTS"           { return T_URL_EXISTS; }
 
-"++"                   { yylval.str = strdup(yytext); return SET_OPERATOR; }
-"--"                   { yylval.str = strdup(yytext); return SET_OPERATOR; }
-"**"                   { yylval.str = strdup(yytext); return SET_OPERATOR; }
+"++"                   { yylval.str = my_strdup(yytext); return SET_OPERATOR; }
+"--"                   { yylval.str = my_strdup(yytext); return SET_OPERATOR; }
+"**"                   { yylval.str = my_strdup(yytext); return SET_OPERATOR; }
 
-"+"                    { yylval.str = strdup(yytext); return OPERATOR; }
-"-"                    { yylval.str = strdup(yytext); return OPERATOR; }
-"*"                    { yylval.str = strdup(yytext); return OPERATOR; }
+"+"                    { yylval.str = my_strdup(yytext); return OPERATOR; }
+"-"                    { yylval.str = my_strdup(yytext); return OPERATOR; }
+"*"                    { yylval.str = my_strdup(yytext); return OPERATOR; }
 "|"                    { return '|'; }
 
 ":"                    { return T_COLON; }
@@ -49,15 +60,14 @@ WORD       [a-zA-Z_][a-zA-Z0-9_]*
 "="                    { return '='; }
 
 {STRING}               {
-                          yylval.str = strdup(yytext);
+                          yylval.str = my_strdup(yytext);
                           return STRING_LITERAL;
                       }
 
 {WORD}                 {
-                          yylval.str = strdup(yytext);
+                          yylval.str = my_strdup(yytext);
                           return IDENTIFIER;
                       }
-
 
 [ \t\r\n]+             { }
 

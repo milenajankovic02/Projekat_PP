@@ -50,24 +50,24 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     IDENTIFIER = 258,
-     STRING_LITERAL = 259,
-     SET_OPERATOR = 260,
-     OPERATOR = 261,
-     VALUE = 262,
-     KEY = 263,
-     T_QUERY = 264,
-     T_EXEC = 265,
-     T_RESULT_OF_QUERY = 266,
-     T_IF = 267,
-     T_FOR = 268,
-     T_IN = 269,
-     T_BEGIN = 270,
-     T_END = 271,
-     T_EMPTY = 272,
-     T_NOT_EMPTY = 273,
-     T_URL_EXISTS = 274,
-     T_COLON = 275
+     T_COLON = 258,
+     IDENTIFIER = 259,
+     STRING_LITERAL = 260,
+     SET_OPERATOR = 261,
+     OPERATOR = 262,
+     VALUE = 263,
+     KEY = 264,
+     T_QUERY = 265,
+     T_EXEC = 266,
+     T_RESULT_OF_QUERY = 267,
+     T_IF = 268,
+     T_FOR = 269,
+     T_IN = 270,
+     T_BEGIN = 271,
+     T_END = 272,
+     T_EMPTY = 273,
+     T_NOT_EMPTY = 274,
+     T_URL_EXISTS = 275
    };
 #endif
 
@@ -78,7 +78,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 21 "parser.y"
+#line 24 "parser.y"
 
     char* str;
     Node* node;

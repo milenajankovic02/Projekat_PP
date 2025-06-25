@@ -3,12 +3,16 @@
 #include "parser.tab.h"
 #include "ast.h"
 #include "errors.h"
+extern int yydebug;
 
 extern FILE* yyin;
 extern int yyparse();
 extern Node* root; // Definisano u parser.y
 
 int main(int argc, char* argv[]) {
+    //yydebug = 1; 
+    //samo jos u parser.y da dodam #define YYDEBUG 1
+ 
     if (argc < 2) {
         fprintf(stderr, "Upotreba: %s <ulazni_fajl>\n", argv[0]);
         return 1;
@@ -24,9 +28,9 @@ int main(int argc, char* argv[]) {
 
     printf("Startujem parser...\n");
     if (yyparse() == 0) {
-        printf("Parsiranje uspješno.\n\nAST:\n");
-        print_ast(root, 0);
-        free_ast(root);
+        printf("Parsiranje uspjesno.\n\nAST:\n");
+        print_ast(root);
+      //  free_ast(root);
     } else {
         fprintf(stderr, "Parsiranje nije uspjelo.\n");
     }
