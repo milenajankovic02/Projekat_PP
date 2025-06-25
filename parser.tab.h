@@ -38,11 +38,12 @@
 #line 1 "parser.y"
 
     #include "ast.h"
+    #include "sy_table.h"
 
 
 
 /* Line 1676 of yacc.c  */
-#line 46 "parser.tab.h"
+#line 47 "parser.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -78,7 +79,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 24 "parser.y"
+#line 27 "parser.y"
 
     char* str;
     Node* node;
@@ -86,7 +87,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 90 "parser.tab.h"
+#line 91 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

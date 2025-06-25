@@ -13,3 +13,9 @@ void report_syntax_error(const char* error, int line, int column) {
 void report_lexical_error(const char* message, int line, int column) {
     fprintf(stderr, RED "Leksicka greska: %s na liniji %d, koloni %d\n" RESET, message, line, column);
 }
+
+
+//ipak ovo necu da koristim, printfovala sam za svako pravilo
+void report_semantic_error(const char* message, int line, int column) {
+    fprintf(stderr, RED "Semanticka greska: %s na liniji %d, koloni %d\n" RESET, message, line, column);
+}

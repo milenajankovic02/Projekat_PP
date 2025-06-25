@@ -68,7 +68,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 4 "parser.y"
+#line 5 "parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,6 +81,8 @@ int yylex(void);
 Node* root = NULL;
 
 int syntax_error = 0;
+int semantic_error = 0;
+
 void yyerror(const char* s) {
     syntax_error = 1;
     report_syntax_error(s, yylineno, 0);
@@ -88,7 +90,7 @@ void yyerror(const char* s) {
 
 
 /* Line 189 of yacc.c  */
-#line 92 "parser.tab.c"
+#line 94 "parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -114,11 +116,12 @@ void yyerror(const char* s) {
 #line 1 "parser.y"
 
     #include "ast.h"
+    #include "sy_table.h"
 
 
 
 /* Line 209 of yacc.c  */
-#line 122 "parser.tab.c"
+#line 125 "parser.tab.c"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -154,7 +157,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 24 "parser.y"
+#line 27 "parser.y"
 
     char* str;
     Node* node;
@@ -162,7 +165,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 166 "parser.tab.c"
+#line 169 "parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -174,7 +177,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 178 "parser.tab.c"
+#line 181 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -472,10 +475,10 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    47,    47,    58,    72,    75,    82,    85,    88,    94,
-      98,   105,   108,   111,   114,   121,   124,   131,   134,   137,
-     143,   149,   152,   158,   162,   168,   171,   174,   180,   183,
-     186,   189,   195
+       0,    50,    50,    61,    75,    78,    85,    89,    93,   100,
+     104,   111,   118,   121,   128,   135,   146,   157,   164,   171,
+     181,   187,   190,   196,   200,   210,   213,   216,   222,   225,
+     228,   231,   237
 };
 #endif
 
@@ -1429,7 +1432,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 47 "parser.y"
+#line 50 "parser.y"
     {
       if(syntax_error== 0)
       {
@@ -1446,7 +1449,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 58 "parser.y"
+#line 61 "parser.y"
     {
       if(syntax_error== 0)
       {
@@ -1463,7 +1466,7 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 72 "parser.y"
+#line 75 "parser.y"
     {
         (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
@@ -1472,7 +1475,7 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 75 "parser.y"
+#line 78 "parser.y"
     {
         (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node));
     ;}
@@ -1481,8 +1484,9 @@ yyreduce:
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 82 "parser.y"
+#line 85 "parser.y"
     {
+      insert_symbol((yyvsp[(2) - (5)].str));  
       (yyval.node) = create_declaration(create_identifier((yyvsp[(2) - (5)].str)), (yyvsp[(4) - (5)].node));
     ;}
     break;
@@ -1490,8 +1494,9 @@ yyreduce:
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 85 "parser.y"
+#line 89 "parser.y"
     {
+      insert_symbol((yyvsp[(2) - (5)].str));
       (yyval.node) = create_declaration(create_identifier((yyvsp[(2) - (5)].str)), (yyvsp[(4) - (5)].node));
     ;}
     break;
@@ -1499,8 +1504,9 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 88 "parser.y"
+#line 93 "parser.y"
     {
+      insert_symbol((yyvsp[(2) - (3)].str));
       (yyval.node) = create_declaration_roq(create_identifier((yyvsp[(2) - (3)].str)));
     ;}
     break;
@@ -1508,7 +1514,7 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 94 "parser.y"
+#line 100 "parser.y"
     {
         //kreiramo sekvencu komandi ako imamo samo jednu komandu
         (yyval.node) = (yyvsp[(1) - (1)].node);
@@ -1518,7 +1524,7 @@ yyreduce:
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 98 "parser.y"
+#line 104 "parser.y"
     {
         //dodajemo novu komandu u sekvencu
         (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node)); 
@@ -1528,8 +1534,12 @@ yyreduce:
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 105 "parser.y"
+#line 111 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(2) - (3)].str))) {
+            printf("Semantiska greska: IDENTIFIER '%s' nije deklarisan prije EXEC.\n", (yyvsp[(2) - (3)].str));
+            semantic_error = 1;
+        }       
         (yyval.node) = create_exec(create_identifier((yyvsp[(2) - (3)].str)));
     ;}
     break;
@@ -1537,7 +1547,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 108 "parser.y"
+#line 118 "parser.y"
     {
         (yyval.node) = create_if((yyvsp[(2) - (5)].node), create_begin(), (yyvsp[(4) - (5)].node), create_end());
     ;}
@@ -1546,16 +1556,20 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 111 "parser.y"
+#line 121 "parser.y"
     {
-        (yyval.node) = create_for(create_identifier((yyvsp[(2) - (7)].str)), create_in(), (yyvsp[(4) - (7)].node), create_begin(), (yyvsp[(6) - (7)].node), create_end());
+        if (!symbol_exists((yyvsp[(2) - (7)].str))) {
+            printf("Semanticka greska: Iterator '%s' u FOR nije deklarisan.\n", (yyvsp[(2) - (7)].str));
+            semantic_error = 1;
+        }      
+       (yyval.node) = create_for(create_identifier((yyvsp[(2) - (7)].str)), create_in(), (yyvsp[(4) - (7)].node), create_begin(), (yyvsp[(6) - (7)].node), create_end());
     ;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 114 "parser.y"
+#line 128 "parser.y"
     {
         (yyval.node) = (yyvsp[(1) - (2)].node);
     ;}
@@ -1564,8 +1578,16 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 121 "parser.y"
+#line 135 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(1) - (4)].str))) {
+            printf("Semanticka greska: Lijeva strana '%s' nije deklarisana prije dodjele.\n", (yyvsp[(1) - (4)].str));
+            semantic_error = 1;
+        }
+        if (!symbol_exists((yyvsp[(4) - (4)].str))) {
+            printf("Semanticka greska: EXEC target '%s' nije deklarisan.\n", (yyvsp[(4) - (4)].str));
+            semantic_error = 1;
+        }
         (yyval.node) = create_assign_command_exec(create_identifier((yyvsp[(1) - (4)].str)), create_identifier((yyvsp[(4) - (4)].str)));
     ;}
     break;
@@ -1573,8 +1595,12 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 124 "parser.y"
+#line 146 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(1) - (5)].str)) || !symbol_exists((yyvsp[(3) - (5)].str)) || !symbol_exists((yyvsp[(5) - (5)].str))) {
+            printf("Semanticka greska: Jedan od IDENTIFIER-a u '%s = %s %s %s' nije deklarisan.\n", (yyvsp[(1) - (5)].str), (yyvsp[(3) - (5)].str), (yyvsp[(4) - (5)].str), (yyvsp[(5) - (5)].str));
+            semantic_error = 1;
+        }    
         (yyval.node) = create_assign_command_op(create_identifier((yyvsp[(1) - (5)].str)), create_identifier((yyvsp[(3) - (5)].str)), create_set_operator((yyvsp[(4) - (5)].str)) ,create_identifier((yyvsp[(5) - (5)].str)));
     ;}
     break;
@@ -1582,8 +1608,12 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 131 "parser.y"
+#line 157 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(3) - (4)].str))) {
+            printf("Semantička greška: IDENTIFIER '%s' u EMPTY uslovu nije deklarisan.\n", (yyvsp[(3) - (4)].str));
+            semantic_error = 1;
+        }      
       (yyval.node) = create_condition_empty(create_identifier((yyvsp[(3) - (4)].str)));
     ;}
     break;
@@ -1591,8 +1621,12 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 134 "parser.y"
+#line 164 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(3) - (6)].str)) || !symbol_exists((yyvsp[(5) - (6)].str))) {
+            printf("Semantička greška: IDENTIFIER '%s' u EMPTY uslovu nije deklarisan.\n", (yyvsp[(3) - (6)].str));
+            semantic_error = 1;
+        }
       (yyval.node) = create_condition_url_exists(create_identifier((yyvsp[(3) - (6)].str)), create_string_literal((yyvsp[(5) - (6)].str)));
     ;}
     break;
@@ -1600,8 +1634,12 @@ yyreduce:
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 137 "parser.y"
+#line 171 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(3) - (4)].str))) {
+            printf("Semantička greška: IDENTIFIER '%s' u EMPTY uslovu nije deklarisan.\n", (yyvsp[(3) - (4)].str));
+            semantic_error = 1;
+        } 
       (yyval.node) = create_condition_not_empty(create_identifier((yyvsp[(3) - (4)].str)));
     ;}
     break;
@@ -1609,7 +1647,7 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 143 "parser.y"
+#line 181 "parser.y"
     {
         (yyval.node) = (yyvsp[(2) - (3)].node);
     ;}
@@ -1618,7 +1656,7 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 149 "parser.y"
+#line 187 "parser.y"
     {
         (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
@@ -1627,7 +1665,7 @@ yyreduce:
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 152 "parser.y"
+#line 190 "parser.y"
     {
         (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));
     ;}
@@ -1636,7 +1674,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 158 "parser.y"
+#line 196 "parser.y"
     {
         (yyval.node) = (yyvsp[(2) - (3)].node);
     ;}
@@ -1645,8 +1683,12 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 162 "parser.y"
+#line 200 "parser.y"
     {
+        if (!symbol_exists((yyvsp[(1) - (1)].str))) {
+            report_semantic_error("Korišćenje nedefinisanog upita u query", yylineno, 0);
+            semantic_error = 1;
+        }
         (yyval.node) = create_identifier((yyvsp[(1) - (1)].str));
     ;}
     break;
@@ -1654,7 +1696,7 @@ yyreduce:
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 168 "parser.y"
+#line 210 "parser.y"
     {
     (yyval.node) = (yyvsp[(1) - (1)].node);
   ;}
@@ -1663,7 +1705,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 171 "parser.y"
+#line 213 "parser.y"
     {
     (yyval.node) = create_juxtaposition((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node)); 
   ;}
@@ -1672,7 +1714,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 174 "parser.y"
+#line 216 "parser.y"
     {
     (yyval.node) = create_or((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));
   ;}
@@ -1681,7 +1723,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 180 "parser.y"
+#line 222 "parser.y"
     {
         (yyval.node) = create_identifier((yyvsp[(1) - (1)].str));
     ;}
@@ -1690,7 +1732,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 183 "parser.y"
+#line 225 "parser.y"
     {
         (yyval.node) = (yyvsp[(1) - (1)].node);
     ;}
@@ -1699,7 +1741,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 186 "parser.y"
+#line 228 "parser.y"
     {
         (yyval.node) = create_unary_op((yyvsp[(1) - (2)].str)[0], (yyvsp[(2) - (2)].node));
     ;}
@@ -1708,7 +1750,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 189 "parser.y"
+#line 231 "parser.y"
     {
         (yyval.node) = (yyvsp[(2) - (3)].node); 
     ;}
@@ -1717,7 +1759,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 195 "parser.y"
+#line 237 "parser.y"
     {
         (yyval.node) = create_directive((yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str));
     ;}
@@ -1726,7 +1768,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 1730 "parser.tab.c"
+#line 1772 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1938,6 +1980,6 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 199 "parser.y"
+#line 241 "parser.y"
 
 

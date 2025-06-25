@@ -1,16 +1,20 @@
 // === symbol_table.c ===
 #include "sy_table.h"
+#include "ast.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static Symbol* head = NULL;
 
+
+
+
 void insert_symbol(const char* name) {
     if (symbol_exists(name)) return; // već postoji
 
     Symbol* s = malloc(sizeof(Symbol));
-    s->name = strdup(name);
+    s->name = my_strdup(name);
 //    s->type = type;
     s->next = head;
     head = s;
